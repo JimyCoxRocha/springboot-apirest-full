@@ -63,6 +63,7 @@ public class CouchDBConnection {
 	private String getSelector (Map<String, SelectorEntity> params) {
 		JsonObject selector = new JsonObject();
 		
+		
 		for (Map.Entry<String, SelectorEntity> pair : params.entrySet()) {
 			JsonObject d = new JsonObject();
 			

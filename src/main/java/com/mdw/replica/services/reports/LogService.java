@@ -11,11 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.JsonObject;
 import com.mdw.replica.config.CouchDBConnection;
-import com.mdw.replica.entities.http.RSEntity;
 import com.mdw.replica.entities.http.RSExceptionEntity;
-import com.mdw.replica.entities.logs.LogEndPointEntity;
-import com.mdw.replica.entities.logs.LogServiceEntity;
-import com.mdw.replica.entities.reports.ReportAuditEntity;
+import com.mdw.replica.entities.reports.ReportResponseEntity;
 import com.mdw.replica.entities.request.ReportEndPointsEntity;
 import com.mdw.replica.entities.request.ReportEntity;
 import com.mdw.replica.entities.request.ReportModuleEntity;
@@ -25,14 +22,17 @@ import com.mdw.replica.entities.utilities.SelectorEntity;
 import com.mdw.replica.utilities.Helpers;
 
 @Service
-public class LogAuditoryServi {
+public class LogService {
 	private ReportRequestEntity reportRequest = new ReportRequestEntity();
+	private String typeReport;
 	
 	@Autowired
 	private CouchDBConnection couch;
+
 	
-	public List<ReportAuditEntity> findByModule(ReportEntity report) throws RSExceptionEntity{
-		List<ReportAuditEntity> response = new ArrayList<ReportAuditEntity>();
+	public List<ReportResponseEntity> findByModule(ReportEntity report, String typeReport) throws RSExceptionEntity{
+		List<ReportResponseEntity> response = new ArrayList<ReportResponseEntity>();
+		this.typeReport = typeReport;
 		try {
 			this.reportRequest.setFechaDesde(report.getFechaDesde());
 			this.reportRequest.setFechaHasta(report.getFechaHasta());
@@ -54,8 +54,8 @@ public class LogAuditoryServi {
 	}
 	
 	
-	public List<ReportAuditEntity> findByService(List<ReportServiceEntity> rptService) throws RSExceptionEntity{
-		List<ReportAuditEntity> response = new ArrayList<ReportAuditEntity>();
+	public List<ReportResponseEntity> findByService(List<ReportServiceEntity> rptService) throws RSExceptionEntity{
+		List<ReportResponseEntity> response = new ArrayList<ReportResponseEntity>();
 		try {
 			for(ReportServiceEntity service : rptService) {
 				this.reportRequest.setIdServicio(service.getKey());
@@ -75,8 +75,8 @@ public class LogAuditoryServi {
 		return response;
 	}
 	
-	public List<ReportAuditEntity> findByEndPoint(List<ReportEndPointsEntity> rptEndPoints) throws RSExceptionEntity{
-		List<ReportAuditEntity> response = new ArrayList<ReportAuditEntity>();
+	public List<ReportResponseEntity> findByEndPoint(List<ReportEndPointsEntity> rptEndPoints) throws RSExceptionEntity{
+		List<ReportResponseEntity> response = new ArrayList<ReportResponseEntity>();
 		try {
 			for(ReportEndPointsEntity endPoint: rptEndPoints) {
 				this.reportRequest.setIdEndPoint(endPoint.getKey());
@@ -95,8 +95,8 @@ public class LogAuditoryServi {
 		return response;
 	}
 	
-	public List<ReportAuditEntity> searchReport() throws RSExceptionEntity{
-		List<ReportAuditEntity> response = new ArrayList<ReportAuditEntity>();
+	public List<ReportResponseEntity> searchReport() throws RSExceptionEntity{
+		List<ReportResponseEntity> response = new ArrayList<ReportResponseEntity>();
 		Map<String, SelectorEntity> m = new HashMap<>();
 		
 		try {
@@ -105,13 +105,20 @@ public class LogAuditoryServi {
 							"$lte", Helpers.addHoursFinal(reportRequest.getFechaHasta())));
 			
 			m.put("pathController", new SelectorEntity("$eq", reportRequest.getIdServicio()));
-			m.put("pathEndPoint", new SelectorEntity("$eq", reportRequest.getIdEndPoint()));
-
+			m.put("pathEndpoint", new SelectorEntity("$eq", reportRequest.getIdEndPoint()));
+			
+			if(this.typeReport.equals("OK")) {
+				m.put("dataOutput.typeError", new SelectorEntity("$eq", this.typeReport));
+			}else {
+				m.put("dataOutput.typeError", new SelectorEntity("$ne", "OK"));
+			}
 			List<JsonObject> l = this.couch.find(this.reportRequest.getDataBase(), m);
+			
+			//CREANDO UNA NUEVA INSTANCIA
 			
 			if(l.size() != 0) {
 				for(JsonObject ob : l) {
-					response.add(new ReportAuditEntity(ob));
+					response.add(new ReportResponseEntity(ob));
 				}
 			}
 			

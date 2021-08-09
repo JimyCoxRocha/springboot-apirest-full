@@ -28,6 +28,15 @@ public class Helpers {
 		return googleJson.fromJson(gsonBuilder.toJson(data), JsonElement.class);
 	}
 	
+	public static String jsonToString(String data) {
+		Gson gsonBuilder = new GsonBuilder().serializeNulls().create();
+		Gson googleJson = new Gson();
+		String datoConvertir =  googleJson.fromJson(data, String.class);
+		if (datoConvertir != null)
+			return datoConvertir;
+		return  "";
+	}
+	
 	@SuppressWarnings("deprecation")
 	public static JsonElement toJson(String dataRaw) {
 		dataRaw = new JsonParser().parse(dataRaw).toString();
