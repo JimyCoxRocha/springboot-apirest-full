@@ -30,6 +30,22 @@ public class LogService {
 	private CouchDBConnection couch;
 
 	
+	public String deleteById(String dataBase, String _id, String _rev) throws RSExceptionEntity {
+		try {
+			this.couch.delete(dataBase, _id, _rev);
+//			return new RSEntity<List<LogServiceEntity>>(response, response.size());
+			
+			return "Delete element by id: "+ _id;
+		} catch (RSExceptionEntity e) {
+			return "Error: " + e.getMessage()+ " |in element by id: "+ _id + " |CODE ERROR: "+e.getCode();
+		} catch (Exception e) {
+			// TODO: handle exception
+			return "Error: " + e.getMessage()+ " |in element by id: "+ _id + " CODE ERROR: "+HttpStatus.INTERNAL_SERVER_ERROR;
+		}
+	}
+	
+	
+	
 	public List<ReportResponseEntity> findByModule(ReportEntity report, String typeReport) throws RSExceptionEntity{
 		List<ReportResponseEntity> response = new ArrayList<ReportResponseEntity>();
 		this.typeReport = typeReport;
@@ -109,9 +125,11 @@ public class LogService {
 			
 			if(this.typeReport.equals("OK")) {
 				m.put("dataOutput.typeError", new SelectorEntity("$eq", this.typeReport));
-			}else {
+				
+			}else if(this.typeReport.equals("")) {
 				m.put("dataOutput.typeError", new SelectorEntity("$ne", "OK"));
 			}
+			
 			List<JsonObject> l = this.couch.find(this.reportRequest.getDataBase(), m);
 			
 			//CREANDO UNA NUEVA INSTANCIA

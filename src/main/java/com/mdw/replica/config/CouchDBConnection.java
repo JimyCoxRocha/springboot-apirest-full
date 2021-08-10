@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.lightcouch.CouchDbClient;
 import org.lightcouch.CouchDbProperties;
+import org.lightcouch.NoDocumentException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
@@ -115,6 +116,29 @@ public class CouchDBConnection {
 		} catch (RSExceptionEntity e) {
 			// TODO: handle exception
 			throw new RSExceptionEntity(e.getMessage(), e.getCode());	
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw new RSExceptionEntity(e.getMessage(), HttpStatus.REQUEST_TIMEOUT);	
+		}
+	}
+	
+	public void delete (String database, String _id, String _rev) throws RSExceptionEntity{
+		try {
+			CouchDbClient connection = this.getConnection(database);
+			//La clase que le enviamos es para ver de que tipo queremos la lista, en este caso será del tipo JsonObject
+			Object resp =  connection.remove(_id, _rev);
+			System.out.println(resp);
+			connection.shutdown();
+			
+//			if(resp == null)
+//				throw new RSExceptionEntity("Error: 1", HttpStatus.NOT_FOUND);
+			
+
+		} catch (RSExceptionEntity e) {
+			// TODO: handle exception
+			throw new RSExceptionEntity(e.getMessage(), e.getCode());
+		} catch (NoDocumentException e) {
+			throw new RSExceptionEntity(e.getMessage(), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			// TODO: handle exception
 			throw new RSExceptionEntity(e.getMessage(), HttpStatus.REQUEST_TIMEOUT);	

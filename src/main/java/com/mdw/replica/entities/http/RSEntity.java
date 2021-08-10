@@ -42,6 +42,13 @@ public class RSEntity<T> {
 		this.numRows = 0;
 	}
 	
+	public RSEntity(String message) {
+		this.setOk();
+		this.error = false;
+		this.typeError = "";
+		this.numRows = 0;
+	}
+	
 	public RSEntity(T data, Integer numRows) {
 		this.error = false;
 		this.setOk();
@@ -62,6 +69,10 @@ public class RSEntity<T> {
 	public ResponseEntity<RSEntity<T>> send(RSExceptionEntity e) {
 		RSEntity<T> aux = new RSEntity<>(this.getTypeError(e.getCode()), e.getMessages());
 		return new ResponseEntity<RSEntity<T>>(aux, e.getCode());
+	}
+	
+	public void setMessages(String message) {
+		this.messages.add(message);
 	}
 	
 	private String getTypeError(HttpStatus code) {
